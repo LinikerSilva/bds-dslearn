@@ -1,7 +1,9 @@
 package com.devsuperior.dslearnbds.resources.exceptions;
 
 import com.devsuperior.dslearnbds.services.exceptions.DatabaseException;
+import com.devsuperior.dslearnbds.services.exceptions.ForbiddenException;
 import com.devsuperior.dslearnbds.services.exceptions.ResourceNotFoundException;
+import com.devsuperior.dslearnbds.services.exceptions.UnauthorizedException;
 
 import java.time.Instant;
 import javax.servlet.http.HttpServletRequest;
@@ -17,9 +19,9 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 public class ResourceExceptionHandler {
 
 	@ExceptionHandler(ResourceNotFoundException.class)
-	public ResponseEntity<com.devsuperior.dslearnbds.resources.exceptions.StandardError> entityNotFound(ResourceNotFoundException e, HttpServletRequest request) {
+	public ResponseEntity<StandardError> entityNotFound(ResourceNotFoundException e, HttpServletRequest request) {
 		HttpStatus status = HttpStatus.NOT_FOUND;
-		com.devsuperior.dslearnbds.resources.exceptions.StandardError err = new com.devsuperior.dslearnbds.resources.exceptions.StandardError();
+		StandardError err = new com.devsuperior.dslearnbds.resources.exceptions.StandardError();
 		err.setTimestamp(Instant.now());
 		err.setStatus(status.value());
 		err.setError("Resource not found");
@@ -29,9 +31,9 @@ public class ResourceExceptionHandler {
 	}	
 	
 	@ExceptionHandler(DatabaseException.class)
-	public ResponseEntity<com.devsuperior.dslearnbds.resources.exceptions.StandardError> database(DatabaseException e, HttpServletRequest request) {
+	public ResponseEntity<StandardError> database(DatabaseException e, HttpServletRequest request) {
 		HttpStatus status = HttpStatus.BAD_REQUEST;
-		com.devsuperior.dslearnbds.resources.exceptions.StandardError err = new com.devsuperior.dslearnbds.resources.exceptions.StandardError();
+		StandardError err = new com.devsuperior.dslearnbds.resources.exceptions.StandardError();
 		err.setTimestamp(Instant.now());
 		err.setStatus(status.value());
 		err.setError("Database exception");
@@ -41,9 +43,9 @@ public class ResourceExceptionHandler {
 	}
 
 	@ExceptionHandler(MethodArgumentNotValidException.class)
-	public ResponseEntity<com.devsuperior.dslearnbds.resources.exceptions.ValidationError> validation(MethodArgumentNotValidException e, HttpServletRequest request) {
+	public ResponseEntity<ValidationError> validation(MethodArgumentNotValidException e, HttpServletRequest request) {
 		HttpStatus status = HttpStatus.UNPROCESSABLE_ENTITY;
-		com.devsuperior.dslearnbds.resources.exceptions.ValidationError err = new com.devsuperior.dslearnbds.resources.exceptions.ValidationError();
+		ValidationError err = new com.devsuperior.dslearnbds.resources.exceptions.ValidationError();
 		err.setTimestamp(Instant.now());
 		err.setStatus(status.value());
 		err.setError("Validation exception");
@@ -55,5 +57,17 @@ public class ResourceExceptionHandler {
 		}
 		
 		return ResponseEntity.status(status).body(err);
+	}
+
+	@ExceptionHandler(ForbiddenException.class)
+	public ResponseEntity<OAuthCustomError> forbidden(ForbiddenException e, HttpServletRequest request) {
+		OAuthCustomError err = new OAuthCustomError("Forbidden", e.getMessage());
+		return ResponseEntity.status(HttpStatus.FORBIDDEN).body(err);
+	}
+
+	@ExceptionHandler(UnauthorizedException.class)
+	public ResponseEntity<OAuthCustomError> unauthorized(UnauthorizedException e, HttpServletRequest request) {
+		OAuthCustomError err = new OAuthCustomError("Unauthorized", e.getMessage());
+		return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(err);
 	}
 }
